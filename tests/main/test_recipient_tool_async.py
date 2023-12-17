@@ -45,10 +45,7 @@ class SquareTool(ToolMessage):
     # this is a stateless tool, so we can define the handler here,
     # without having to define a `square` method in the agent.
     def handle(self) -> str:
-        if self.number % 10 == 0:
-            return str(self.number**2)
-        else:
-            return "-1"
+        return str(self.number**2) if self.number % 10 == 0 else "-1"
 
 
 @pytest.mark.asyncio

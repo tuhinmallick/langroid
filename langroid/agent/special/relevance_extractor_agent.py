@@ -108,4 +108,4 @@ class RelevanceExtractorAgent(ChatAgent):
         # assume this has numbered segments
         extracts = extract_numbered_segments(self.numbered_passage, spec)
         # this response ends the task by saying DONE
-        return "DONE " + extracts
+        return f"DONE {extracts}"

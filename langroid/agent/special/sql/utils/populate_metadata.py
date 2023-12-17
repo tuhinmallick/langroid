@@ -58,7 +58,7 @@ def populate_metadata(
     ] = populate_metadata_with_schema_tools(metadata=metadata, info=info)
 
     # Iterate over tables to update column metadata
-    for table_name in db_info.keys():
+    for table_name in db_info:
         # Update only if additional info for the table exists
         if table_name in info:
             for column_name in db_info[table_name]["columns"]:

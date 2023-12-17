@@ -120,7 +120,7 @@ class Task:
 
         self.logger: None | RichFileLogger = None
         self.tsv_logger: None | logging.Logger = None
-        self.color_log: bool = False if settings.notebook else True
+        self.color_log: bool = not settings.notebook
         self.agent = agent
         self.step_progress = False  # progress in current step?
         self.n_stalled_steps = 0  # how many consecutive steps with no progress?
@@ -200,7 +200,7 @@ class Task:
         agent: ChatAgent = agent_cls(config_copy)
         return Task(
             agent,
-            name=self.name + f"-{i}",
+            name=f"{self.name}-{i}",
             llm_delegate=self.llm_delegate,
             single_round=self.single_round,
             system_message=self.agent.system_message,
@@ -220,9 +220,7 @@ class Task:
 
     @property
     def _level(self) -> int:
-        if self.caller is None:
-            return 0
-        return self.caller._level + 1
+        return 0 if self.caller is None else self.caller._level + 1
 
     @property
     def _indent(self) -> str:
@@ -230,11 +228,11 @@ class Task:
 
     @property
     def _enter(self) -> str:
-        return self._indent + ">>>"
+        return f"{self._indent}>>>"
 
     @property
     def _leave(self) -> str:
-        return self._indent + "<<<"
+        return f"{self._indent}<<<"
 
     def add_sub_task(self, task: Task | List[Task]) -> None:
         """
@@ -314,8 +312,8 @@ class Task:
         See `run_async()` for details."""
         self.task_progress = False
         self.n_stalled_steps = 0
-        assert (
-            msg is None or isinstance(msg, str) or isinstance(msg, ChatDocument)
+        assert msg is None or isinstance(
+            msg, (str, ChatDocument)
         ), f"msg arg in Task.run() must be None, str, or ChatDocument, not {type(msg)}"
 
         if (
@@ -680,16 +678,14 @@ class Task:
         """
         if isinstance(e, Task):
             actual_turns = e.turns if e.turns > 0 else turns
-            result = e.run(
+            return e.run(
                 self.pending_message,
                 turns=actual_turns,
                 caller=self,
             )
-            return result
         else:
             response_fn = self._entity_responder_map[cast(Entity, e)]
-            result = response_fn(self.pending_message)
-            return result
+            return response_fn(self.pending_message)
 
     async def response_async(
         self,
@@ -713,16 +709,14 @@ class Task:
         """
         if isinstance(e, Task):
             actual_turns = e.turns if e.turns > 0 else turns
-            result = await e.run_async(
+            return await e.run_async(
                 self.pending_message,
                 turns=actual_turns,
                 caller=self,
             )
-            return result
         else:
             response_fn = self._entity_responder_async_map[cast(Entity, e)]
-            result = await response_fn(self.pending_message)
-            return result
+            return await response_fn(self.pending_message)
 
     def result(self) -> ChatDocument:
         """
@@ -867,9 +861,9 @@ class Task:
             tool_type = f.tool_type.rjust(6)
             tool_name = f.tool.rjust(10)
             tool_str = f"{tool_type}({tool_name})" if tool_name != "" else ""
-            sender = f"[{color}]" + str(f.sender_entity).rjust(10) + f"[/{color}]"
+            sender = f"[{color}]{str(f.sender_entity).rjust(10)}" + f"[/{color}]"
             sender_name = f.sender_name.rjust(10)
-            recipient = "=>" + str(f.recipient).rjust(10)
+            recipient = f"=>{str(f.recipient).rjust(10)}"
             block = "X " + str(f.block or "").rjust(10)
             content = f"[{color}]{f.content}[/{color}]"
             msg_str = (
@@ -890,7 +884,7 @@ class Task:
         Args:
             recipient (str): Name of recipient
         """
-        if recipient == "":
+        if not recipient:
             return True
         # native responders names are USER, LLM, AGENT,
         # and the names of subtasks are from Task.name attribute
@@ -906,11 +900,7 @@ class Task:
         if self.pending_message is None:
             return False
         recipient = self.pending_message.metadata.recipient
-        if recipient == "":
-            return False
-        # LLM-specified recipient could be an entity such as USER or AGENT,
-        # or the name of another task.
-        return recipient not in (e.name, self.name)
+        return False if recipient == "" else recipient not in (e.name, self.name)
 
     def _can_respond(self, e: Responder) -> bool:
         if self.pending_sender == e:

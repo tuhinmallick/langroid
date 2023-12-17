@@ -248,7 +248,7 @@ class OpenAIGPTConfig(LLMConfig):
         class DynamicConfig(OpenAIGPTConfig):
             pass
 
-        DynamicConfig.Config.env_prefix = prefix.upper() + "_"
+        DynamicConfig.Config.env_prefix = f"{prefix.upper()}_"
 
         return DynamicConfig
 
@@ -455,7 +455,7 @@ class OpenAIGPT(LanguageModel):
             function_name = event_fn_name
             has_function = True
             if not is_async:
-                sys.stdout.write(Colors().GREEN + "FUNC: " + event_fn_name + ": ")
+                sys.stdout.write(f"{Colors().GREEN}FUNC: {function_name}: ")
                 sys.stdout.flush()
         if event_args:
             function_args += event_args
@@ -594,7 +594,7 @@ class OpenAIGPT(LanguageModel):
                     " treating args as normal message"
                 )
                 has_function = False
-                completion = completion + function_args
+                completion += function_args
 
         # mock openai response so we can cache it
         if chat:
@@ -602,7 +602,7 @@ class OpenAIGPT(LanguageModel):
             if has_function:
                 function_call = LLMFunctionCall(name=function_name)
                 function_call_dict = function_call.dict()
-                if function_args == "":
+                if not function_args:
                     function_call.arguments = None
                 else:
                     function_call.arguments = args
@@ -891,8 +891,7 @@ class OpenAIGPT(LanguageModel):
             prompt = formatter.format(messages)
             return await self.agenerate(prompt=prompt, max_tokens=max_tokens)
         try:
-            result = await self._achat(messages, max_tokens, functions, function_call)
-            return result
+            return await self._achat(messages, max_tokens, functions, function_call)
         except Exception as e:
             # capture exceptions not handled by retry, so we don't crash
             logging.error(friendly_error(e, "Error in OpenAIGPT.achat: "))

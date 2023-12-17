@@ -43,7 +43,7 @@ for path in sorted(Path(src_dir).rglob("*.py")):
     # Write docstring documentation to disk via parser
     with mkdocs_gen_files.open(full_doc_path, "w") as fd:
         ident = ".".join(parts)
-        full_code_path = repo_root + "/" + str(path)
+        full_code_path = f"{repo_root}/{str(path)}"
         fd.write(f"[{path}]({full_code_path})\n")
         fd.write(f"::: {ident}")
     # Update parser

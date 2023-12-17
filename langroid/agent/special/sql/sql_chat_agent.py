@@ -263,14 +263,10 @@ class SQLChatAgent(ChatAgent):
             {self.config.context_descriptions}
             ```"""
 
-        # Construct the error message
-        error_message_template = f"""\
-        {SQL_ERROR_MSG}: '{query}'
+        return f"""\\n            #        {SQL_ERROR_MSG}: '{query}'
         {str(e)}
         Run a new query, correcting the errors.
         {optional_schema_description}"""
-
-        return error_message_template
 
     def run_query(self, msg: RunQueryTool) -> str:
         """

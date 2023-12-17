@@ -54,20 +54,19 @@ class MomentoVI(VectorStore):
         self.port = config.port
         load_dotenv()
         api_key = os.getenv("MOMENTO_API_KEY")
-        if config.cloud:
-            if api_key is None:
-                raise ValueError(
-                    """MOMENTO_API_KEY env variable must be set to 
-                    MomentoVI hosted service. Please set this in your .env file. 
-                    """
-                )
-            self.client = PreviewVectorIndexClient(
-                configuration=VectorIndexConfigurations.Default.latest(),
-                credential_provider=CredentialProvider.from_string(api_key),
-            )
-        else:
+        if not config.cloud:
             raise NotImplementedError("MomentoVI local not available yet")
 
+        if api_key is None:
+            raise ValueError(
+                """MOMENTO_API_KEY env variable must be set to 
+                    MomentoVI hosted service. Please set this in your .env file. 
+                    """
+            )
+        self.client = PreviewVectorIndexClient(
+            configuration=VectorIndexConfigurations.Default.latest(),
+            credential_provider=CredentialProvider.from_string(api_key),
+        )
         # Note: Only create collection if a non-null collection name is provided.
         # This is useful to delay creation of vecdb until we have a suitable
         # collection name (e.g. we could get it from the url or folder path).
@@ -93,7 +92,7 @@ class MomentoVI(VectorStore):
             return 0
         coll_names = self.list_collections(empty=False)
         coll_names = [name for name in coll_names if name.startswith(prefix)]
-        if len(coll_names) == 0:
+        if not coll_names:
             logger.warning(f"No collections found with prefix {prefix}")
             return 0
         for name in coll_names:
@@ -251,7 +250,7 @@ class MomentoVI(VectorStore):
             for match in response.hits
             if match is not None
         ]
-        if len(docs) == 0:
+        if not docs:
             logger.warning(f"No matches found for {text}")
             return []
         if settings.debug:

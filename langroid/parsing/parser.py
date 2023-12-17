@@ -59,7 +59,7 @@ class Parser:
         # chunks and is useless. We want a distinct id for each chunk.
         orig_ids = [c.metadata.id for c in chunks]
         ids = [Document.hash_id(str(c)) for c in chunks]
-        id2chunk = {id: c for id, c in zip(ids, chunks)}
+        id2chunk = dict(zip(ids, chunks))
 
         # group the ids by orig_id
         orig_id_to_ids: Dict[str, List[str]] = {}
@@ -71,7 +71,7 @@ class Parser:
         # now each orig_id maps to a sequence of ids within a single doc
 
         k = self.config.n_neighbor_ids
-        for orig, ids in orig_id_to_ids.items():
+        for ids in orig_id_to_ids.values():
             # ids are consecutive chunks in a single doc
             n = len(ids)
             window_ids = [ids[max(0, i - k) : min(n, i + k + 1)] for i in range(n)]
@@ -120,7 +120,7 @@ class Parser:
                 split_chunks += splits
             if len(split_chunks) == len(chunks):
                 if un_splittables > 0:
-                    max_len = max([self.num_tokens(p.content) for p in chunks])
+                    max_len = max(self.num_tokens(p.content) for p in chunks)
                     logger.warning(
                         f"""
                         Unable to split {un_splittables} chunks
@@ -252,7 +252,7 @@ class Parser:
         return chunks
 
     def split(self, docs: List[Document]) -> List[Document]:
-        if len(docs) == 0:
+        if not docs:
             return []
         # create ids in metadata of docs if absent:
         # we need this to distinguish docs later in add_window_ids
@@ -262,7 +262,7 @@ class Parser:
         # some docs are already splits, so don't split them further!
         chunked_docs = [d for d in docs if d.metadata.is_chunk]
         big_docs = [d for d in docs if not d.metadata.is_chunk]
-        if len(big_docs) == 0:
+        if not big_docs:
             return chunked_docs
         if self.config.splitter == Splitter.PARA_SENTENCE:
             big_doc_chunks = self.split_para_sentence(big_docs)

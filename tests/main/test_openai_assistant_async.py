@@ -103,8 +103,8 @@ def test_openai_asst_batch(test_settings: Settings):
         agent,
         agent.llm_response_async,
         questions,
-        input_map=lambda x: str(x) + "+" + str(3),  # what to feed to each task
-        output_map=lambda x: x,  # how to process the result of each task
+        input_map=lambda x: f"{str(x)}+3",
+        output_map=lambda x: x,
     )
 
     # expected_answers are simple numbers, but
@@ -116,8 +116,8 @@ def test_openai_asst_batch(test_settings: Settings):
     answers = llm_response_batch(
         agent,
         questions,
-        input_map=lambda x: str(x) + "+" + str(3),  # what to feed to each task
-        output_map=lambda x: x,  # how to process the result of each task
+        input_map=lambda x: f"{str(x)}+3",
+        output_map=lambda x: x,
     )
 
     # expected_answers are simple numbers, but
@@ -148,8 +148,8 @@ def test_openai_asst_task_batch(test_settings: Settings):
     answers = run_batch_tasks(
         task,
         questions,
-        input_map=lambda x: str(x) + "+" + str(3),  # what to feed to each task
-        output_map=lambda x: x,  # how to process the result of each task
+        input_map=lambda x: f"{str(x)}+3",
+        output_map=lambda x: x,
     )
 
     # expected_answers are simple numbers, but

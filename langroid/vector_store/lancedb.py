@@ -53,7 +53,7 @@ class LanceDB(VectorStore):
                     uri=config.storage_path,
                 )
             except Exception as e:
-                new_storage_path = config.storage_path + ".new"
+                new_storage_path = f"{config.storage_path}.new"
                 logger.warning(
                     f"""
                     Error connecting to local LanceDB at {config.storage_path}:
@@ -91,7 +91,7 @@ class LanceDB(VectorStore):
         coll_names = [
             c for c in self.list_collections(empty=True) if c.startswith(prefix)
         ]
-        if len(coll_names) == 0:
+        if not coll_names:
             logger.warning(f"No collections found with prefix {prefix}")
             return 0
         n_empty_deletes = 0
@@ -150,14 +150,13 @@ class LanceDB(VectorStore):
 
         n = self.embedding_dim
 
-        NewModel = create_model(
+        return create_model(
             "NewModel",
             __base__=LanceModel,
             id=(str, ...),
             vector=(Vector(n), ...),
             payload=(doc_cls, ...),
         )
-        return NewModel  # type: ignore
 
     def _create_flat_lance_schema(self, doc_cls: Type[Document]) -> Type[BaseModel]:
         """
@@ -165,8 +164,7 @@ class LanceDB(VectorStore):
         supported by LanceDB.
         """
         lance_model = self._create_lance_schema(doc_cls)
-        FlatModel = flatten_pydantic_model(lance_model, base_model=LanceModel)
-        return FlatModel
+        return flatten_pydantic_model(lance_model, base_model=LanceModel)
 
     def create_collection(self, collection_name: str, replace: bool = False) -> None:
         """
@@ -235,8 +233,7 @@ class LanceDB(VectorStore):
         tbl = self.client.open_table(self.config.collection_name)
         records = tbl.search(None).to_arrow().to_pylist()
         doc_cls = self.config.document_class
-        docs = [doc_cls(**rec["payload"]) for rec in records]
-        return docs
+        return [doc_cls(**rec["payload"]) for rec in records]
 
     def get_documents_by_ids(self, ids: List[str]) -> List[Document]:
         if self.config.collection_name is None:
@@ -248,8 +245,7 @@ class LanceDB(VectorStore):
             for _id in _ids
         ]
         doc_cls = self.config.document_class
-        docs = [doc_cls(**rec["payload"]) for rec in records]
-        return docs
+        return [doc_cls(**rec["payload"]) for rec in records]
 
     def similar_texts_with_scores(
         self,
@@ -271,7 +267,7 @@ class LanceDB(VectorStore):
         # note _distance is 1 - cosine
         scores = [1 - rec["_distance"] for rec in records]
         docs = [self.config.document_class(**rec["payload"]) for rec in records]
-        if len(docs) == 0:
+        if not docs:
             logger.warning(f"No matches found for {text}")
             return []
         if settings.debug:

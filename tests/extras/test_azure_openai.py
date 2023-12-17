@@ -39,7 +39,7 @@ def test_azure_wrapper(streaming, country, capital):
     cfg.stream = streaming
     mdl = AzureGPT(config=cfg)
 
-    question = "What is the capital of " + country + "?"
+    question = f"What is the capital of {country}?"
 
     set_global(Settings(cache=False))
     cfg.use_chat_for_completion = True

@@ -30,10 +30,7 @@ T = TypeVar("T")
 
 
 def from_optional(x: Optional[T], default: T) -> T:
-    if x is None:
-        return default
-
-    return x
+    return default if x is None else x
 
 
 class QdrantDBConfig(VectorStoreConfig):
@@ -77,7 +74,7 @@ class QdrantDB(VectorStore):
                     path=config.storage_path,
                 )
             except Exception as e:
-                new_storage_path = config.storage_path + ".new"
+                new_storage_path = f"{config.storage_path}.new"
                 logger.warning(
                     f"""
                     Error connecting to local QdrantDB at {config.storage_path}:
@@ -115,7 +112,7 @@ class QdrantDB(VectorStore):
         coll_names = [
             c for c in self.list_collections(empty=True) if c.startswith(prefix)
         ]
-        if len(coll_names) == 0:
+        if not coll_names:
             logger.warning(f"No collections found with prefix {prefix}")
             return 0
         n_empty_deletes = 0
@@ -268,8 +265,7 @@ class QdrantDB(VectorStore):
         # so we re-order them here.
         id2payload = {record.id: record.payload for record in records}
         ordered_payloads = [id2payload[id] for id in _ids]
-        docs = [Document(**payload) for payload in ordered_payloads]  # type: ignore
-        return docs
+        return [Document(**payload) for payload in ordered_payloads]
 
     def similar_texts_with_scores(
         self,
@@ -299,7 +295,7 @@ class QdrantDB(VectorStore):
             for match in search_result
             if match is not None
         ]
-        if len(docs) == 0:
+        if not docs:
             logger.warning(f"No matches found for {text}")
             return []
         doc_score_pairs = list(zip(docs, scores))

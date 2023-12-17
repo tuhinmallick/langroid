@@ -94,10 +94,7 @@ def dataframe_summary(df: pd.DataFrame) -> str:
     nan_summary = df.isnull().sum().rename("missing_values").to_frame()
     nan_str = "Missing Values Column Summary:\n" + nan_summary.to_string() + "\n"
 
-    # Combine the summaries into one structured string
-    summary_str = col_names_str + num_str + cat_str + nan_str
-
-    return summary_str
+    return col_names_str + num_str + cat_str + nan_str
 
 
 class TableChatAgentConfig(ChatAgentConfig):

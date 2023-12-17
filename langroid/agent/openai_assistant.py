@@ -202,14 +202,14 @@ class OpenAIAssistant(ChatAgent):
         org = self.llm.client.organization or ""
         uid = generate_user_id(org)
         name = self.config.name
-        return "Thread:" + name + ":" + uid
+        return f"Thread:{name}:{uid}"
 
     def _cache_assistant_key(self) -> str:
         """Key to use for caching or retrieving assistant id"""
         org = self.llm.client.organization or ""
         uid = generate_user_id(org)
         name = self.config.name
-        return "Assistant:" + name + ":" + uid
+        return f"Assistant:{name}:{uid}"
 
     @no_type_check
     def _cache_messages_key(self) -> str:
@@ -239,9 +239,7 @@ class OpenAIAssistant(ChatAgent):
             return None
         key = self._cache_messages_key()
         cached_dict = self.llm.cache.retrieve(key)
-        if cached_dict is None:
-            return None
-        return LLMResponse.parse_obj(cached_dict)
+        return None if cached_dict is None else LLMResponse.parse_obj(cached_dict)
 
     def _cache_store(self) -> None:
         """
@@ -401,9 +399,7 @@ class OpenAIAssistant(ChatAgent):
         if self.thread is None or self.run is None:
             raise ValueError("Thread or Run is None")
         result = self.runs.steps.list(thread_id=self.thread.id, run_id=self.run.id)
-        if result is None:
-            return []
-        return result.data
+        return [] if result is None else result.data
 
     def _get_code_logs(self) -> List[Tuple[str, str]]:
         """
@@ -674,7 +670,7 @@ class OpenAIAssistant(ChatAgent):
                     f"[{index}] Click <here> to download {cited_file.filename}"
                 )
             # Note: File download functionality not implemented above for brevity
-        sep = "\n" if len(citations) > 0 else ""
+        sep = "\n" if citations else ""
         annotated_content.value += sep + "\n".join(citations)
 
     def _llm_response_preprocess(
@@ -752,7 +748,6 @@ class OpenAIAssistant(ChatAgent):
             response_str = str(response.function_call)
         else:
             response_str = response.message
-        cache_str = "[red](cached)[/red]" if cached else ""
         if not settings.quiet:
             if not cached and self._get_code_logs_str():
                 print(
@@ -760,7 +755,8 @@ class OpenAIAssistant(ChatAgent):
                     "-------------------------------\n"
                     f"{self._get_code_logs_str()}[/magenta]"
                 )
-            print(f"{cache_str}[green]" + response_str + "[/green]")
+            cache_str = "[red](cached)[/red]" if cached else ""
+            print(f"{cache_str}[green]{response_str}[/green]")
         cdoc = ChatDocument.from_LLMResponse(response, displayed=False)
         # Note message.metadata.tool_ids may have been popped above
         tool_ids = (
@@ -826,7 +822,7 @@ class OpenAIAssistant(ChatAgent):
             # LLM that this is the result of the last TOOL;
             # This ensures our caching trick works.
             if self.config.use_tools and len(self.get_tool_messages(msg)) > 0:
-                response.content = "TOOL Result: " + response.content
+                response.content = f"TOOL Result: {response.content}"
             return response
         except Exception:
             return response

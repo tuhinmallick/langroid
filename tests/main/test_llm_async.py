@@ -38,7 +38,7 @@ async def test_openai_gpt_async(test_settings: Settings, streaming, country, cap
     )
 
     mdl = OpenAIGPT(config=cfg)
-    question = "What is the capital of " + country + "?"
+    question = f"What is the capital of {country}?"
 
     set_global(Settings(cache=False))
     # chat mode via `generate`,
@@ -88,7 +88,7 @@ async def test_llm_async_concurrent(test_settings: Settings):
 
     mdl = OpenAIGPT(config=cfg)
     N = 5
-    questions = ["1+" + str(i) for i in range(N)]
+    questions = [f"1+{str(i)}" for i in range(N)]
     expected_answers = [str(i + 1) for i in range(N)]
     answers = await asyncio.gather(
         *(mdl.agenerate(prompt=question, max_tokens=20) for question in questions)

@@ -6,8 +6,7 @@ from langroid.cachedb.momento_cachedb import MomentoCache, MomentoCacheConfig
 @pytest.fixture
 def momento_cache():
     config = MomentoCacheConfig()
-    cache = MomentoCache(config=config)
-    return cache
+    return MomentoCache(config=config)
 
 
 @pytest.mark.integration

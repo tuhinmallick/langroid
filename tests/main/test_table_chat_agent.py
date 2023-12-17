@@ -56,8 +56,7 @@ def generate_data(size: int) -> str:
 
 @pytest.fixture
 def mock_dataframe() -> pd.DataFrame:
-    data = generate_data(100)  # generate data for 1000 rows
-    return data
+    return generate_data(100)
 
 
 @pytest.fixture

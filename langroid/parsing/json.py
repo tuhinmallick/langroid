@@ -32,11 +32,9 @@ def extract_top_level_json(s: str) -> List[str]:
     # Find JSON object and array candidates using regular expressions
     json_candidates = regex.findall(r"(?<!\\)(?:\\\\)*\{(?:[^{}]|(?R))*\}", s)
 
-    top_level_jsons = [
+    return [
         candidate for candidate in json_candidates if is_valid_json(candidate)
     ]
-
-    return top_level_jsons
 
 
 def top_level_json_field(s: str, f: str) -> Any:

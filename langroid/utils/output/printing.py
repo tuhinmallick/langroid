@@ -12,7 +12,7 @@ from langroid.utils.constants import Colors
 
 def shorten_text(text: str, chars: int = 40) -> str:
     text = " ".join(text.split())
-    return text[:chars] + "..." + text[-chars:] if len(text) > 2 * chars else text
+    return f"{text[:chars]}...{text[-chars:]}" if len(text) > 2 * chars else text
 
 
 def print_long_text(
@@ -20,7 +20,7 @@ def print_long_text(
 ) -> None:
     if chars is not None:
         text = " ".join(text.split())
-        text = text[:chars] + "..." + text[-chars:] if len(text) > 2 * chars else text
+        text = f"{text[:chars]}...{text[-chars:]}" if len(text) > 2 * chars else text
     styled_text = Text(text, style=style)
     rprint(f"[{color}]{preamble} {styled_text}")
 

@@ -22,26 +22,26 @@ sentence_cfg = SentenceTransformerEmbeddingsConfig(
 
 
 def generate_vecdbs(embed_cfg: EmbeddingModelsConfig) -> VectorStore:
-    qd_dir = ".qdrant-" + embed_cfg.model_type
+    qd_dir = f".qdrant-{embed_cfg.model_type}"
     rmdir(qd_dir)
     qd_cfg = QdrantDBConfig(
         cloud=False,
-        collection_name="test-" + embed_cfg.model_type,
+        collection_name=f"test-{embed_cfg.model_type}",
         storage_path=qd_dir,
         embedding=embed_cfg,
     )
 
     qd_cfg_cloud = QdrantDBConfig(
         cloud=True,
-        collection_name="test-" + embed_cfg.model_type,
+        collection_name=f"test-{embed_cfg.model_type}",
         storage_path=qd_dir,
         embedding=embed_cfg,
     )
 
-    cd_dir = ".chroma-" + embed_cfg.model_type
+    cd_dir = f".chroma-{embed_cfg.model_type}"
     rmdir(cd_dir)
     cd_cfg = ChromaDBConfig(
-        collection_name="test-" + embed_cfg.model_type,
+        collection_name=f"test-{embed_cfg.model_type}",
         storage_path=cd_dir,
         embedding=embed_cfg,
     )
@@ -62,9 +62,10 @@ def test_vector_stores(vecdb: Union[ChromaDB, QdrantDB]):
     ]
     vecdb.add_documents(docs)
     docs_and_scores = vecdb.similar_texts_with_scores("hello", k=2)
-    assert set([docs_and_scores[0][0].content, docs_and_scores[1][0].content]) == set(
-        ["hello", "hi there"]
-    )
+    assert {docs_and_scores[0][0].content, docs_and_scores[1][0].content} == {
+        "hello",
+        "hi there",
+    }
     if vecdb.config.cloud:
         vecdb.delete_collection(collection_name=vecdb.config.collection_name)
     else:

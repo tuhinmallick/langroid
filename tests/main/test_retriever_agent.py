@@ -137,5 +137,5 @@ def test_retriever_agent(
 ) -> None:
     set_global(test_settings)
     response = agent.llm_response(query=query).content
-    assert all([k in response for k in expected.split(",")])
-    assert all([k not in response for k in not_expected.split(",")])
+    assert all(k in response for k in expected.split(","))
+    assert all(k not in response for k in not_expected.split(","))

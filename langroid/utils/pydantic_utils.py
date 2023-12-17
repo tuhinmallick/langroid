@@ -158,7 +158,7 @@ def nested_dict_from_flat(
     """
     nested_data: Dict[str, Any] = {}
     for key, value in flat_data.items():
-        if sub_dict != "" and not key.startswith(sub_dict + "__"):
+        if sub_dict != "" and not key.startswith(f"{sub_dict}__"):
             continue
         keys = key.split("__")
         d = nested_data

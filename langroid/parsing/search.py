@@ -45,7 +45,7 @@ def find_fuzzy_matches_in_docs(
         List[Document]: List of Documents containing the matches,
             including the given number of words around the match.
     """
-    if len(docs) == 0:
+    if not docs:
         return []
     best_matches = process.extract(
         query,
@@ -57,7 +57,7 @@ def find_fuzzy_matches_in_docs(
     real_matches = [m for m, score in best_matches if score > 50]
     # find the original docs that corresponding to the matches
     orig_doc_matches = []
-    for i, m in enumerate(real_matches):
+    for m in real_matches:
         for j, doc_clean in enumerate(docs_clean):
             if m in doc_clean.content:
                 orig_doc_matches.append(docs[j])
@@ -79,7 +79,7 @@ def find_fuzzy_matches_in_docs(
             words = choice_text.split()
             end_pos = min(end_pos, len(words))
             choice_text = " ".join(words[end_pos:])
-        if len(contexts) > 0:
+        if contexts:
             contextual_matches.append(
                 Document(
                     content=" ... ".join(contexts),
@@ -124,10 +124,7 @@ def preprocess_text(text: str) -> str:
     lemmatizer = WordNetLemmatizer()
     tokens = [lemmatizer.lemmatize(t) for t in tokens]
 
-    # Join the words back into a string
-    text = " ".join(tokens)
-
-    return text
+    return " ".join(tokens)
 
 
 def find_closest_matches_with_bm25(
@@ -148,7 +145,7 @@ def find_closest_matches_with_bm25(
     Returns:
         List[Tuple[Document,float]]: List of (Document, score) tuples.
     """
-    if len(docs) == 0:
+    if not docs:
         return []
     texts = [doc.content for doc in docs_clean]
     query = preprocess_text(query)
@@ -253,7 +250,7 @@ def eliminate_near_duplicates(passages: List[str], threshold: float = 0.8) -> Li
         minhashes[idx] = m
 
     unique_idxs = set()
-    for idx in minhashes.keys():
+    for idx in minhashes:
         # Query for similar passages (including itself)
         result = lsh.query(minhashes[idx])
 

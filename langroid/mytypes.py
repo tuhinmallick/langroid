@@ -57,7 +57,7 @@ class Document(BaseModel):
     @staticmethod
     def hash_id(doc: str) -> str:
         # Encode the document as UTF-8
-        doc_utf8 = str(doc).encode("utf-8")
+        doc_utf8 = doc.encode("utf-8")
 
         # Create a SHA256 hash object
         sha256_hash = hashlib.sha256()

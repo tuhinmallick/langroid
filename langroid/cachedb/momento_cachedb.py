@@ -37,15 +37,14 @@ class MomentoCache(CacheDB):
         momento_token = os.getenv("MOMENTO_AUTH_TOKEN")
         if momento_token is None:
             raise ValueError("""MOMENTO_AUTH_TOKEN not set in .env file""")
-        else:
-            self.client = momento.CacheClient(
-                configuration=momento.Configurations.Laptop.v1(),
-                credential_provider=momento.CredentialProvider.from_environment_variable(
-                    "MOMENTO_AUTH_TOKEN"
-                ),
-                default_ttl=timedelta(seconds=self.config.ttl),
-            )
-            self.client.create_cache(self.config.cachename)
+        self.client = momento.CacheClient(
+            configuration=momento.Configurations.Laptop.v1(),
+            credential_provider=momento.CredentialProvider.from_environment_variable(
+                "MOMENTO_AUTH_TOKEN"
+            ),
+            default_ttl=timedelta(seconds=self.config.ttl),
+        )
+        self.client.create_cache(self.config.cachename)
 
     def clear(self) -> None:
         """Clear keys from current db."""
