@@ -49,10 +49,7 @@ def generate_random_sentences(k: int) -> str:
 
 def generate_random_text(num_sentences: int) -> str:
     fake = Faker()
-    text = ""
-    for _ in range(num_sentences):
-        text += fake.sentence() + " "
-    return text
+    return "".join(f"{fake.sentence()} " for _ in range(num_sentences))
 
 
 def closest_string(query: str, string_list: List[str]) -> str:
@@ -78,12 +75,7 @@ def closest_string(query: str, string_list: List[str]) -> str:
         query.lower().strip(), str_dict.keys(), n=1
     )
 
-    # Retrieve the original string from the value in the dictionary.
-    original_closest_match = (
-        str_dict[closest_match[0]] if closest_match else "No match found"
-    )
-
-    return original_closest_match
+    return str_dict[closest_match[0]] if closest_match else "No match found"
 
 
 def split_paragraphs(text: str) -> List[str]:
@@ -218,7 +210,7 @@ def extract_numbered_segments(s: str, specs: str) -> str:
         'Hello world! Have a good day.'
     """
     # Use the helper function to get the list of indices from specs
-    if specs.strip() == "":
+    if not specs.strip():
         return ""
     spec_indices = parse_number_range_list(specs)
 
@@ -234,16 +226,11 @@ def extract_numbered_segments(s: str, specs: str) -> str:
     for paragraph in paragraphs:
         segments_with_numbers = segment_pattern.findall(paragraph)
 
-        # Extract the desired segments from this paragraph
-        extracted_segments = [
+        if extracted_segments := [
             segment
             for num, segment in segments_with_numbers
             if int(num) in spec_indices
-        ]
-
-        # If we extracted any segments from this paragraph,
-        # join them and append to results
-        if extracted_segments:
+        ]:
             extracted_paragraphs.append(" ".join(extracted_segments))
 
     return "\n\n".join(extracted_paragraphs)

@@ -62,9 +62,7 @@ class GoogleSearchDocChatAgent(DocChatAgent):
         self.tried_vecdb = True
         query = msg.query
         _, extracts = self.get_relevant_extracts(query)
-        if len(extracts) == 0:
-            return NO_ANSWER
-        return "\n".join(str(e) for e in extracts)
+        return NO_ANSWER if len(extracts) == 0 else "\n".join(str(e) for e in extracts)
 
     def relevant_search_extracts(self, msg: RelevantSearchExtractsTool) -> str:
         """Get docs/extracts relevant to the query, from a web search"""

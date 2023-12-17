@@ -61,9 +61,7 @@ class ChatDocument(Document):
         tool_str = ""
         if fields.tool_type != "":
             tool_str = f"{fields.tool_type}[{fields.tool}]: "
-        recipient_str = ""
-        if fields.recipient != "":
-            recipient_str = f"=>{fields.recipient}: "
+        recipient_str = f"=>{fields.recipient}: " if fields.recipient != "" else ""
         return (
             f"{fields.sender_entity}[{fields.sender_name}] "
             f"{recipient_str}{tool_str}{fields.content}"

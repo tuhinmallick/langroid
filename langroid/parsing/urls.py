@@ -49,7 +49,7 @@ def get_user_input(msg: str, color: str = "blue") -> str:
     Returns:
         user input
     """
-    color_str = f"[{color}]{msg} " if color else msg + " "
+    color_str = f"[{color}]{msg} " if color else f"{msg} "
     print(color_str, end="")
     return input("")
 
@@ -153,7 +153,7 @@ def crawl_url(url: str, max_urls: int = 1) -> List[str]:
         if known_urls is not None and len(known_urls) >= max_urls:
             break
         # Set the RobotFileParser object to the website's robots.txt file
-        robots.set_url(url + "/robots.txt")
+        robots.set_url(f"{url}/robots.txt")
         robots.read()
 
         if robots.can_fetch("*", url):
@@ -214,7 +214,7 @@ def find_urls(
         links = [urljoin(url, a["href"]) for a in soup.find_all("a", href=True)]
 
         # Defrag links: discard links that are to portions of same page
-        defragged_links = list(set(urldefrag(link).url for link in links))
+        defragged_links = list({urldefrag(link).url for link in links})
 
         # Filter links based on domain matching requirement
         domain_matching_links = [

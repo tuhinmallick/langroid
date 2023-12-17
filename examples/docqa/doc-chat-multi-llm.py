@@ -115,7 +115,7 @@ def chat(config: DocChatAgentConfig) -> None:
 
     # show cost summary
     print("LLM usage, cost summary:")
-    print(str(langroid.language_models.base.LanguageModel.usage_cost_summary()))
+    print(langroid.language_models.base.LanguageModel.usage_cost_summary())
 
 
 @app.command()
@@ -139,7 +139,7 @@ def main(
         timeout=45,
     )
 
-    if model == "":
+    if not model:
         llm_config = OpenAIGPTConfig(timeout=45)  # default GPT-4
     else:
         llm_config = my_llm_config

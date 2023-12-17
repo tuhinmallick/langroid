@@ -242,7 +242,7 @@ class ChatAgent(Agent):
             str: concatenation of instructions for all usable tools
         """
         enabled_classes: List[Type[ToolMessage]] = list(self.llm_tools_map.values())
-        if len(enabled_classes) == 0:
+        if not enabled_classes:
             return ""
         instructions = []
         for msg_cls in enabled_classes:
@@ -255,11 +255,11 @@ class ChatAgent(Agent):
                 # so we don't need to show it here.
                 example = "" if self.config.use_tools else (msg_cls.usage_example())
                 if example != "":
-                    example = "EXAMPLE: " + example
+                    example = f"EXAMPLE: {example}"
                 guidance = (
                     ""
                     if msg_cls.instructions() == ""
-                    else ("GUIDANCE: " + msg_cls.instructions())
+                    else f"GUIDANCE: {msg_cls.instructions()}"
                 )
                 if guidance == "" and example == "":
                     continue
@@ -272,7 +272,7 @@ class ChatAgent(Agent):
                         """.lstrip()
                     )
                 )
-        if len(instructions) == 0:
+        if not instructions:
             return ""
         instructions_str = "\n\n".join(instructions)
         return textwrap.dedent(
@@ -292,10 +292,14 @@ class ChatAgent(Agent):
 
     def last_message_with_role(self, role: Role) -> LLMMessage | None:
         """from `message_history`, return the last message with role `role`"""
-        for i in range(len(self.message_history) - 1, -1, -1):
-            if self.message_history[i].role == role:
-                return self.message_history[i]
-        return None
+        return next(
+            (
+                self.message_history[i]
+                for i in range(len(self.message_history) - 1, -1, -1)
+                if self.message_history[i].role == role
+            ),
+            None,
+        )
 
     def update_last_message(self, message: str, role: str = Role.USER) -> None:
         """
@@ -383,11 +387,7 @@ class ChatAgent(Agent):
             request = message_class.default_value("request")
             llm_function = message_class.llm_function_schema(defaults=include_defaults)
             self.llm_functions_map[request] = llm_function
-            if force:
-                self.llm_function_force = dict(name=request)
-            else:
-                self.llm_function_force = None
-
+            self.llm_function_force = dict(name=request) if force else None
         for t in tools:
             if handle:
                 self.llm_tools_handled.add(t)
@@ -684,7 +684,7 @@ class ChatAgent(Agent):
             else:
                 response_str = response.message
             if not settings.quiet:
-                print(cached + "[green]" + response_str)
+                print(f"{cached}[green]{response_str}")
         self.update_token_usage(
             response,
             messages,
@@ -727,7 +727,7 @@ class ChatAgent(Agent):
             else:
                 response_str = response.message
             if not settings.quiet:
-                print(cached + "[green]" + response_str)
+                print(f"{cached}[green]{response_str}")
 
         self.update_token_usage(
             response,
@@ -834,7 +834,7 @@ class ChatAgent(Agent):
                 "before calling chat_num_tokens()."
             )
         hist = messages if messages is not None else self.message_history
-        return sum([self.parser.num_tokens(m.content) for m in hist])
+        return sum(self.parser.num_tokens(m.content) for m in hist)
 
     def message_history_str(self, i: Optional[int] = None) -> str:
         """

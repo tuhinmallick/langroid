@@ -96,10 +96,7 @@ class RetrieverAgent(DocChatAgent, ABC):
             return None
         if query is None:
             return super().llm_response(None)  # type: ignore
-        if isinstance(query, ChatDocument):
-            query_str = query.content
-        else:
-            query_str = query
+        query_str = query.content if isinstance(query, ChatDocument) else query
         docs = self.get_relevant_extracts(query_str)
         if len(docs) == 0:
             return None

@@ -53,7 +53,7 @@ def vecdb(request) -> VectorStore:
         qd_dir = ":memory:"
         qd_cfg = QdrantDBConfig(
             cloud=False,
-            collection_name="test-" + embed_cfg.model_type,
+            collection_name=f"test-{embed_cfg.model_type}",
             storage_path=qd_dir,
             embedding=embed_cfg,
         )
@@ -63,10 +63,10 @@ def vecdb(request) -> VectorStore:
         return
 
     if request.param == "qdrant_cloud":
-        qd_dir = ".qdrant/cloud/" + embed_cfg.model_type
+        qd_dir = f".qdrant/cloud/{embed_cfg.model_type}"
         qd_cfg_cloud = QdrantDBConfig(
             cloud=True,
-            collection_name="test-" + embed_cfg.model_type,
+            collection_name=f"test-{embed_cfg.model_type}",
             storage_path=qd_dir,
             embedding=embed_cfg,
         )
@@ -77,10 +77,10 @@ def vecdb(request) -> VectorStore:
         return
 
     if request.param == "chroma":
-        cd_dir = ".chroma/" + embed_cfg.model_type
+        cd_dir = f".chroma/{embed_cfg.model_type}"
         rmdir(cd_dir)
         cd_cfg = ChromaDBConfig(
-            collection_name="test-" + embed_cfg.model_type,
+            collection_name=f"test-{embed_cfg.model_type}",
             storage_path=cd_dir,
             embedding=embed_cfg,
         )
@@ -110,14 +110,14 @@ def vecdb(request) -> VectorStore:
         vdb.delete_collection(collection_name=cfg.collection_name)
 
     if request.param == "lancedb":
-        ldb_dir = ".lancedb/data/" + embed_cfg.model_type
+        ldb_dir = f".lancedb/data/{embed_cfg.model_type}"
         rmdir(ldb_dir)
         ldb_cfg = LanceDBConfig(
             cloud=False,
-            collection_name="test-" + embed_cfg.model_type,
+            collection_name=f"test-{embed_cfg.model_type}",
             storage_path=ldb_dir,
             embedding=embed_cfg,
-            document_class=MyDoc,  # IMPORTANT, to ensure table has full schema!
+            document_class=MyDoc,
         )
         ldb = LanceDB(ldb_cfg)
         ldb.add_documents(stored_docs)

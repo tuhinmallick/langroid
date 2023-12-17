@@ -49,7 +49,7 @@ class ChromaDB(VectorStore):
             logger.warning("Not deleting all collections, set really=True to confirm")
             return 0
         coll = [c for c in self.client.list_collections() if c.name.startswith(prefix)]
-        if len(coll) == 0:
+        if not coll:
             logger.warning(f"No collections found with prefix {prefix}")
             return 0
         n_empty_deletes = 0
@@ -178,8 +178,7 @@ class ChromaDB(VectorStore):
         for m in metadatas:
             # restore the stringified list of window_ids into the original List[str]
             m["window_ids"] = m["window_ids"].split(",")
-        docs = [
+        return [
             Document(content=d, metadata=DocMetaData(**m))
             for d, m in zip(contents, metadatas)
         ]
-        return docs

@@ -37,10 +37,7 @@ def _has_files(directory: str) -> bool:
     """
     Recursively checks if there is at least one file in a directory.
     """
-    for dirpath, dirnames, filenames in os.walk(directory):
-        if filenames:
-            return True
-    return False
+    return any(filenames for dirpath, dirnames, filenames in os.walk(directory))
 
 
 class RepoLoaderConfig(BaseSettings):
@@ -170,11 +167,7 @@ class RepoLoader:
         """
         # "a" -> ("a", ""), "a.b" -> ("a", ".b"), ".b" -> (".b", "")
         file_parts = os.path.splitext(name)
-        if file_parts[1] == "":
-            file_type = file_parts[0]  # ("a", "") => "a"
-        else:
-            file_type = file_parts[1][1:]  # (*,".b") => "b"
-        return file_type
+        return file_parts[0] if file_parts[1] == "" else file_parts[1][1:]
 
     def _is_code(self, file_type: str) -> bool:
         """
@@ -426,7 +419,7 @@ class RepoLoader:
                     with open(item_path, "r") as f:
                         file_lines = list(itertools.islice(f, lines))
                     file_content = "\n".join(line.strip() for line in file_lines)
-                    if file_content == "":
+                    if not file_content:
                         continue
 
                     file_dict = {
@@ -565,14 +558,13 @@ class RepoLoader:
             file_content, d = stack.pop()
             if not self._is_allowed(file_content):
                 continue
-            if file_content.type == "dir":
-                if depth is None or d <= depth:
+            if depth is None or d <= depth:
+                if file_content.type == "dir":
                     items = self.repo.get_contents(file_content.path)
                     if not isinstance(items, list):
                         items = [items]
                     stack.extend(list(zip(items, [d + 1] * len(items))))
-            else:
-                if depth is None or d <= depth:
+                else:
                     # need to decode the file content, which is in bytes
                     contents = self.repo.get_contents(file_content.path)
                     if isinstance(contents, list):
@@ -690,12 +682,12 @@ class RepoLoader:
                 for dir in current_structure["dirs"]:
                     queue.append((dir, current_depth + 1))
 
-                for file in current_structure["files"]:
-                    # add file names only if depth is less than the limit
-                    if current_depth < depth:
-                        names.append(file["name"])
-        names = [n for n in names if n not in ["", None]]
-        return names
+                names.extend(
+                    file["name"]
+                    for file in current_structure["files"]
+                    if current_depth < depth
+                )
+        return [n for n in names if n not in ["", None]]
 
     @staticmethod
     def list_files(
@@ -724,14 +716,13 @@ class RepoLoader:
             if root.count(os.sep) - dir.count(os.sep) < depth:
                 level = root.count(os.sep) - dir.count(os.sep)
                 sub_indent = " " * 4 * (level + 1)
-                for d in dirs:
-                    output.append("{}{}/".format(sub_indent, d))
+                output.extend(f"{sub_indent}{d}/" for d in dirs)
                 for f in files:
                     if include_types and RepoLoader._file_type(f) not in include_types:
                         continue
                     if exclude_types and RepoLoader._file_type(f) in exclude_types:
                         continue
-                    output.append("{}{}".format(sub_indent, f))
+                    output.append(f"{sub_indent}{f}")
         return output
 
     @staticmethod
@@ -742,9 +733,7 @@ class RepoLoader:
         Args:
             tree (Dict[str, Union[str, List[Dict]]]): The structure dictionary.
         """
-        contents = ""
-        for dir in tree["dirs"]:
-            contents += RepoLoader.show_file_contents(dir)
+        contents = "".join(RepoLoader.show_file_contents(dir) for dir in tree["dirs"])
         for file in tree["files"]:
             path = file["path"]
             contents += f"""

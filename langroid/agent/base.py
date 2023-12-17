@@ -343,26 +343,24 @@ class Agent(ABC):
         tool_ids = []
         if msg is not None and isinstance(msg, ChatDocument):
             tool_ids = msg.metadata.tool_ids
-        # only return non-None result if user_msg not empty
         if not user_msg:
             return None
+        if user_msg.startswith("SYSTEM"):
+            user_msg = user_msg[6:].strip()
+            source = Entity.SYSTEM
+            sender = Entity.SYSTEM
         else:
-            if user_msg.startswith("SYSTEM"):
-                user_msg = user_msg[6:].strip()
-                source = Entity.SYSTEM
-                sender = Entity.SYSTEM
-            else:
-                source = Entity.USER
-                sender = Entity.USER
-            return ChatDocument(
-                content=user_msg,
-                metadata=ChatDocMetaData(
-                    source=source,
-                    sender=sender,
-                    # preserve trail of tool_ids for OpenAI Assistant fn-calls
-                    tool_ids=tool_ids,
-                ),
-            )
+            source = Entity.USER
+            sender = Entity.USER
+        return ChatDocument(
+            content=user_msg,
+            metadata=ChatDocMetaData(
+                source=source,
+                sender=sender,
+                # preserve trail of tool_ids for OpenAI Assistant fn-calls
+                tool_ids=tool_ids,
+            ),
+        )
 
     @no_type_check
     def llm_can_respond(self, message: Optional[str | ChatDocument] = None) -> bool:
@@ -384,12 +382,7 @@ class Agent(ABC):
             # from a non-Assistant role, with a `function_call` in it
             return False
 
-        if message is not None and len(self.get_tool_messages(message)) > 0:
-            # if there is a valid "tool" message (either JSON or via `function_call`)
-            # then LLM cannot respond to it
-            return False
-
-        return True
+        return message is None or len(self.get_tool_messages(message)) <= 0
 
     @no_type_check
     async def llm_response_async(
@@ -402,11 +395,7 @@ class Agent(ABC):
         if msg is None or not self.llm_can_respond(msg):
             return None
 
-        if isinstance(msg, ChatDocument):
-            prompt = msg.content
-        else:
-            prompt = msg
-
+        prompt = msg.content if isinstance(msg, ChatDocument) else msg
         output_len = self.config.llm.max_output_tokens
         if self.num_tokens(prompt) + output_len > self.llm.completion_context_length():
             output_len = self.llm.completion_context_length() - self.num_tokens(prompt)
@@ -434,7 +423,7 @@ class Agent(ABC):
             # streaming was enabled, AND we did not find a cached response.
             # If we are here, it means the response has not yet been displayed.
             cached = f"[red]{self.indent}(cached)[/red]" if response.cached else ""
-            print(cached + "[green]" + response.message)
+            print(f"{cached}[green]{response.message}")
         async with self.lock:
             self.update_token_usage(
                 response,
@@ -464,11 +453,7 @@ class Agent(ABC):
         if msg is None or not self.llm_can_respond(msg):
             return None
 
-        if isinstance(msg, ChatDocument):
-            prompt = msg.content
-        else:
-            prompt = msg
-
+        prompt = msg.content if isinstance(msg, ChatDocument) else msg
         with ExitStack() as stack:  # for conditionally using rich spinner
             if not self.llm.get_stream():
                 # show rich spinner only if not streaming!
@@ -507,7 +492,7 @@ class Agent(ABC):
             # If we are here, it means the response has not yet been displayed.
             cached = f"[red]{self.indent}(cached)[/red]" if response.cached else ""
             console.print(f"[green]{self.indent}", end="")
-            print(cached + "[green]" + response.message)
+            print(f"{cached}[green]{response.message}")
         self.update_token_usage(
             response,
             prompt,
@@ -567,8 +552,7 @@ class Agent(ABC):
             raise ValueError(f"{tool_name} is not a valid function_call!")
         tool_class = self.llm_tools_map[tool_name]
         tool_msg.update(dict(request=tool_name))
-        tool = tool_class.parse_obj(tool_msg)
-        return tool
+        return tool_class.parse_obj(tool_msg)
 
     def tool_validation_error(self, ve: ValidationError) -> str:
         """
@@ -626,7 +610,7 @@ class Agent(ABC):
         results = [self.handle_tool_message(t) for t in tools]
 
         results_list = [r for r in results if r is not None]
-        if len(results_list) == 0:
+        if not results_list:
             return self.handle_message_fallback(msg)
         # there was a non-None result
         chat_doc_results = [r for r in results_list if isinstance(r, ChatDocument)]
@@ -637,12 +621,11 @@ class Agent(ABC):
                 will be ignored.
                 """
             )
-        if len(chat_doc_results) > 0:
+        if chat_doc_results:
             return chat_doc_results[0]
 
         str_doc_results = [r for r in results_list if isinstance(r, str)]
-        final = "\n".join(str_doc_results)
-        return final
+        return "\n".join(str_doc_results)
 
     def handle_message_fallback(
         self, msg: str | ChatDocument
@@ -707,11 +690,9 @@ class Agent(ABC):
             return self.parser.num_tokens(prompt)
         else:
             return sum(
-                [
-                    self.parser.num_tokens(m.content)
-                    + self.parser.num_tokens(str(m.function_call or ""))
-                    for m in prompt
-                ]
+                self.parser.num_tokens(m.content)
+                + self.parser.num_tokens(str(m.function_call or ""))
+                for m in prompt
             )
 
     def _get_response_stats(
@@ -852,5 +833,5 @@ class Agent(ABC):
                 return None
         answer = agent.llm_response(request)
         if answer != no_answer:
-            return (f"{agent_type} says: " + str(answer)).strip()
+            return f"{agent_type} says: {str(answer)}".strip()
         return None

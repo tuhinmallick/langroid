@@ -68,7 +68,7 @@ async def test_agent_async_concurrent(test_settings: lr.utils.configuration.Sett
     # Async calls should work even if the agent is not async
 
     N = 3
-    questions = ["1+" + str(i) for i in range(N)]
+    questions = [f"1+{str(i)}" for i in range(N)]
     expected_answers = [str(i + 1) for i in range(N)]
     answers = await asyncio.gather(
         *(agent.llm_response_async(question) for question in questions)

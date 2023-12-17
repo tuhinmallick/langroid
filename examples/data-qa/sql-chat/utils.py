@@ -41,10 +41,7 @@ def fix_uri(uri: str) -> str:
     username = urllib.parse.quote(username)
     password = urllib.parse.quote(password)
 
-    # Construct the fixed URI
-    fixed_uri = f"{scheme_part}://{username}:{password}@{rest_of_uri_after_at}"
-
-    return fixed_uri
+    return f"{scheme_part}://{username}:{password}@{rest_of_uri_after_at}"
 
 
 def _create_database_uri(

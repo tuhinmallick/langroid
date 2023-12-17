@@ -80,5 +80,4 @@ def followup_to_standalone(
     Chat history: {history}
     Follow-up question: {question} 
     """.strip()
-    standalone = LLM.generate(prompt=prompt, max_tokens=1024).message.strip()
-    return standalone
+    return LLM.generate(prompt=prompt, max_tokens=1024).message.strip()

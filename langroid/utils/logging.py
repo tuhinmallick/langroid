@@ -104,9 +104,7 @@ def setup_loggers_for_package(package_name: str, level: int) -> None:
     import pkgutil
 
     package = importlib.import_module(package_name)
-    for _, module_name, _ in pkgutil.walk_packages(
-        package.__path__, package.__name__ + "."
-    ):
+    for _, module_name, _ in pkgutil.walk_packages(package.__path__, f"{package.__name__}."):
         module = importlib.import_module(module_name)
         setup_logger(module.__name__, level)
 

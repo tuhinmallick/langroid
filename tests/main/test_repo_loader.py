@@ -70,7 +70,7 @@ def test_repo_loader() -> None:
 
     # dump to json
     s = json.dumps(tree, indent=2)
-    assert len(s) > 0
+    assert s != ""
 
     # select specific files
     desired = ["workflows", "Makefile", "pyproject.toml"]

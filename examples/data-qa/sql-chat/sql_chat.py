@@ -62,14 +62,15 @@ def create_descriptions_file(filepath: str, engine: Engine) -> None:
         raise FileExistsError(f"File {filepath} already exists.")
 
     inspector = inspect(engine)
-    descriptions: Dict[str, Dict[str, Any]] = {}
-
-    for table_name in inspector.get_table_names():
-        descriptions[table_name] = {
+    descriptions: Dict[str, Dict[str, Any]] = {
+        table_name: {
             "description": "",
-            "columns": {col["name"]: "" for col in inspector.get_columns(table_name)},
+            "columns": {
+                col["name"]: "" for col in inspector.get_columns(table_name)
+            },
         }
-
+        for table_name in inspector.get_table_names()
+    }
     with open(filepath, "w") as f:
         json.dump(descriptions, f, indent=4)
 

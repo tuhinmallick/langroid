@@ -42,7 +42,7 @@ def test_openai_gpt(test_settings: Settings, streaming, country, capital):
     )
 
     mdl = OpenAIGPT(config=cfg)
-    question = "What is the capital of " + country + "?"
+    question = f"What is the capital of {country}?"
 
     set_global(Settings(cache=False))
     # chat mode via `generate`,

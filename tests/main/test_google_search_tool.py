@@ -90,7 +90,7 @@ def test_handle_bad_tool_message():
     assert agent.handle_message(NONE_MSG) is None
     result = agent.handle_message(BAD_SEARCH_MSG)
     assert all(
-        [x in result for x in ["web_search", "query", "num_results", "required"]]
+        x in result for x in ["web_search", "query", "num_results", "required"]
     )
 
 

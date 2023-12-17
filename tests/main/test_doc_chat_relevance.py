@@ -36,39 +36,36 @@ def vecdb(request) -> VectorStore:
         qd_dir = ":memory:"
         qd_cfg = QdrantDBConfig(
             cloud=False,
-            collection_name="test-" + embed_cfg.model_type,
+            collection_name=f"test-{embed_cfg.model_type}",
             storage_path=qd_dir,
             embedding=embed_cfg,
         )
-        qd = QdrantDB(qd_cfg)
-        yield qd
+        yield QdrantDB(qd_cfg)
         return
 
     if request.param == "chroma":
-        cd_dir = ".chroma/" + embed_cfg.model_type
+        cd_dir = f".chroma/{embed_cfg.model_type}"
         rmdir(cd_dir)
         cd_cfg = ChromaDBConfig(
-            collection_name="test-" + embed_cfg.model_type,
+            collection_name=f"test-{embed_cfg.model_type}",
             storage_path=cd_dir,
             embedding=embed_cfg,
         )
-        cd = ChromaDB(cd_cfg)
-        yield cd
+        yield ChromaDB(cd_cfg)
         rmdir(cd_dir)
         return
 
     if request.param == "lancedb":
-        ldb_dir = ".lancedb/data/" + embed_cfg.model_type
+        ldb_dir = f".lancedb/data/{embed_cfg.model_type}"
         rmdir(ldb_dir)
         ldb_cfg = LanceDBConfig(
             cloud=False,
-            collection_name="test-" + embed_cfg.model_type,
+            collection_name=f"test-{embed_cfg.model_type}",
             storage_path=ldb_dir,
             embedding=embed_cfg,
-            document_class=MyDoc,  # IMPORTANT, to ensure table has full schema!
+            document_class=MyDoc,
         )
-        ldb = LanceDB(ldb_cfg)
-        yield ldb
+        yield LanceDB(ldb_cfg)
         rmdir(ldb_dir)
         return
 

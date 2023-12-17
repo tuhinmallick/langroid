@@ -111,10 +111,7 @@ class MeiliSearch(VectorStore):
             List of index names stored. We treat any existing index as non-empty.
         """
         indexes = asyncio.run(self._async_get_indexes())
-        if len(indexes) == 0:
-            return []
-        else:
-            return [ind.uid for ind in indexes]
+        return [] if len(indexes) == 0 else [ind.uid for ind in indexes]
 
     async def _async_create_index(self, collection_name: str) -> AsyncIndex:
         async with self.client() as client:

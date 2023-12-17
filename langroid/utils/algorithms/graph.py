@@ -78,14 +78,9 @@ def components(order: np.ndarray) -> List[List[int]]:
     next_group = 0
     n = order.shape[0]
     for i in range(n):
-        connected_groups = {i2g[j] for j in np.nonzero(order[i, :])[0] if j in i2g}
-
-        # If the node is not part of any group
-        # and is not connected to any groups, assign a new group
-        if not connected_groups:
-            i2g[i] = next_group
-            next_group += 1
-        else:
+        if connected_groups := {
+            i2g[j] for j in np.nonzero(order[i, :])[0] if j in i2g
+        }:
             # If the node is connected to multiple groups, we merge them
             main_group = min(connected_groups)
             for j in np.nonzero(order[i, :])[0]:
@@ -93,6 +88,9 @@ def components(order: np.ndarray) -> List[List[int]]:
                     i2g[j] = main_group
             i2g[i] = main_group
 
+        else:
+            i2g[i] = next_group
+            next_group += 1
     # Convert i2g to a list of Lists
     groups: Dict[int, List[int]] = {}
     for index, group in i2g.items():

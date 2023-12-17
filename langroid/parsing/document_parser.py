@@ -217,8 +217,7 @@ class FitzPDFParser(DocumentParser):
             Generator[fitz.Page]: Generator yielding each page.
         """
         doc = fitz.open(stream=self.doc_bytes, filetype="pdf")
-        for i, page in enumerate(doc):
-            yield i, page
+        yield from enumerate(doc)
         doc.close()
 
     def extract_text_from_page(self, page: fitz.Page) -> str:
@@ -247,8 +246,7 @@ class PyPDFParser(DocumentParser):
             Generator[pypdf.pdf.PageObject]: Generator yielding each page.
         """
         reader = pypdf.PdfReader(self.doc_bytes)
-        for i, page in enumerate(reader.pages):
-            yield i, page
+        yield from enumerate(reader.pages)
 
     def extract_text_from_page(self, page: pypdf.PageObject) -> str:
         """
@@ -270,7 +268,7 @@ class PDFPlumberParser(DocumentParser):
 
     def iterate_pages(
         self,
-    ) -> (Generator)[Tuple[int, pdfplumber.pdf.Page], None, None]:  # type: ignore
+    ) -> (Generator)[Tuple[int, pdfplumber.pdf.Page], None, None]:    # type: ignore
         """
         Yield each page in the PDF using `pdfplumber`.
 
@@ -278,8 +276,7 @@ class PDFPlumberParser(DocumentParser):
             Generator[pdfplumber.Page]: Generator yielding each page.
         """
         with pdfplumber.open(self.doc_bytes) as pdf:
-            for i, page in enumerate(pdf.pages):
-                yield i, page
+            yield from enumerate(pdf.pages)
 
     def extract_text_from_page(self, page: pdfplumber.pdf.Page) -> str:  # type: ignore
         """

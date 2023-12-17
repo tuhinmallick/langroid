@@ -17,7 +17,7 @@ def custom_sent_tokenize(text: str) -> List[str]:
         if sentence.strip()
     ]
     # append a period if the sentence does not end with one
-    return [s + "." if s[-1] != "." else s for s in sentences]
+    return [f"{s}." if s[-1] != "." else s for s in sentences]
 
 
 def create_chunks(

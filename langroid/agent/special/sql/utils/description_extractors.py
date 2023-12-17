@@ -79,10 +79,10 @@ def extract_mysql_descriptions(engine: Engine) -> Dict[str, Dict[str, Any]]:
             )
             table_comment = table_result.scalar() or ""
 
-            columns = {}
-            for col in inspector.get_columns(table):
-                columns[col["name"]] = col.get("comment", "")
-
+            columns = {
+                col["name"]: col.get("comment", "")
+                for col in inspector.get_columns(table)
+            }
             result[table] = {"description": table_comment, "columns": columns}
 
     return result
@@ -108,10 +108,7 @@ def extract_default_descriptions(engine: Engine) -> Dict[str, Dict[str, Any]]:
     result: Dict[str, Dict[str, Any]] = {}
 
     for table in table_names:
-        columns = {}
-        for col in inspector.get_columns(table):
-            columns[col["name"]] = ""
-
+        columns = {col["name"]: "" for col in inspector.get_columns(table)}
         result[table] = {"description": "", "columns": columns}
 
     return result

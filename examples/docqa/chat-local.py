@@ -72,7 +72,7 @@ def chat(config: DocChatAgentConfig) -> None:
         agent,
         llm_delegate=False,
         single_round=False,
-        system_message="You are " + system_msg,
+        system_message=f"You are {system_msg}",
     )
     task.run()
 

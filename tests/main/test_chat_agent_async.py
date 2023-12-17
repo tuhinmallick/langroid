@@ -169,7 +169,7 @@ async def test_chat_agent_async_concurrent(test_settings: Settings):
         return await agent.llm_response_async(msg)
 
     N = 3
-    questions = ["1+" + str(i) for i in range(N)]
+    questions = [f"1+{str(i)}" for i in range(N)]
     expected_answers = [str(i + 1) for i in range(N)]
     answers = await asyncio.gather(*(_run_task(msg=question) for question in questions))
     assert len(answers) == len(questions)
@@ -196,7 +196,7 @@ async def test_task_concurrent(test_settings: Settings):
         return await task.run_async(msg=msg)
 
     N = 5
-    questions = ["1+" + str(i) for i in range(N)]
+    questions = [f"1+{str(i)}" for i in range(N)]
     expected_answers = [str(i + 1) for i in range(N)]
 
     # concurrent async calls to all tasks

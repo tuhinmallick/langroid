@@ -23,7 +23,7 @@ def rmdir(path: str) -> bool:
     Returns:
         True if a dir was removed, false otherwise. Raises error if failed to remove.
     """
-    if not any([path.startswith(p) for p in DELETION_ALLOWED_PATHS]):
+    if not any(path.startswith(p) for p in DELETION_ALLOWED_PATHS):
         raise ValueError(
             f"""
         Removing Dir '{path}' not allowed. 
@@ -56,10 +56,7 @@ def caller_name() -> str:
     caller_frame = frame.f_back
 
     # If there's no caller frame, the function was called from the global scope
-    if caller_frame is None:
-        return ""
-
-    return caller_frame.f_code.co_name
+    return "" if caller_frame is None else caller_frame.f_code.co_name
 
 
 def friendly_error(e: Exception, msg: str = "An error occurred.") -> str:
@@ -87,10 +84,7 @@ def generate_user_id(org: str = "") -> str:
     # Create a consistent unique ID based on the username and machine name
     unique_string = f"{org_pfx}{username}@{machine_name}"
 
-    # Generate a SHA-256 hash of the unique string
-    user_id = hashlib.sha256(unique_string.encode()).hexdigest()
-
-    return user_id
+    return hashlib.sha256(unique_string.encode()).hexdigest()
 
 
 def update_hash(hash: str | None = None, s: str = "") -> str:

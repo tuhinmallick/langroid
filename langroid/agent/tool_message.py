@@ -20,7 +20,7 @@ def _recursive_purge_dict_key(d: Dict[str, Any], k: str) -> None:
     """Remove a key from a dictionary recursively"""
     if isinstance(d, dict):
         for key in list(d.keys()):
-            if key == k and "type" in d.keys():
+            if key == k and "type" in d:
                 del d[key]
             else:
                 _recursive_purge_dict_key(d[key], k)

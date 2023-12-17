@@ -58,7 +58,7 @@ def test_code_parser():
     split_docs = parser.split(docs)
     toks = parser.num_tokens
     # verify all chunks are less than twice max chunk size
-    assert max([toks(doc.content) for doc in split_docs]) <= 2 * MAX_CHUNK_SIZE
+    assert max(toks(doc.content) for doc in split_docs) <= 2 * MAX_CHUNK_SIZE
     joined_splits = "".join([doc.content for doc in split_docs])
     joined_docs = "".join([doc.content for doc in docs])
     assert joined_splits.strip() == joined_docs.strip()

@@ -79,7 +79,7 @@ class LLMFunctionCall(BaseModel):
         return fun_call
 
     def __str__(self) -> str:
-        return "FUNC: " + json.dumps(self.dict(), indent=2)
+        return f"FUNC: {json.dumps(self.dict(), indent=2)}"
 
 
 class LLMFunctionSpec(BaseModel):
@@ -161,7 +161,7 @@ class LLMMessage(BaseModel):
 
     def __str__(self) -> str:
         if self.function_call is not None:
-            content = "FUNC: " + json.dumps(self.function_call)
+            content = f"FUNC: {json.dumps(self.function_call)}"
         else:
             content = self.content
         name_str = f" ({self.name})" if self.name else ""
@@ -274,10 +274,7 @@ class LanguageModel(ABC):
 
         openai: Union[Type[AzureGPT], Type[OpenAIGPT]]
 
-        if config.type == "azure":
-            openai = AzureGPT
-        else:
-            openai = OpenAIGPT
+        openai = AzureGPT if config.type == "azure" else OpenAIGPT
         cls = dict(
             openai=openai,
         ).get(config.type, openai)
@@ -315,11 +312,11 @@ class LanguageModel(ABC):
 
         """
         # Handle various degenerate cases
-        messages = [m for m in messages]  # copy
-        DUMMY_SYS_PROMPT = "You are a helpful assistant."
+        messages = list(messages)
         DUMMY_USER_PROMPT = "Follow the instructions above."
-        if len(messages) == 0 or messages[0].role != Role.SYSTEM:
+        if not messages or messages[0].role != Role.SYSTEM:
             logger.warning("No system msg, creating dummy system prompt")
+            DUMMY_SYS_PROMPT = "You are a helpful assistant."
             messages.insert(0, LLMMessage(content=DUMMY_SYS_PROMPT, role=Role.SYSTEM))
         system_prompt = messages[0].content
 
@@ -434,10 +431,10 @@ class LanguageModel(ABC):
 
     @classmethod
     def usage_cost_summary(cls) -> str:
-        s = ""
-        for model, counter in cls.usage_cost_dict.items():
-            s += f"{model}: {counter}\n"
-        return s
+        return "".join(
+            f"{model}: {counter}\n"
+            for model, counter in cls.usage_cost_dict.items()
+        )
 
     def followup_to_standalone(
         self, chat_history: List[Tuple[str, str]], question: str
@@ -509,8 +506,7 @@ class LanguageModel(ABC):
         Returns:
             list of verbatim extracts from passages that are relevant to question
         """
-        docs = asyncio.run(self._get_verbatim_extracts(question, passages))
-        return docs
+        return asyncio.run(self._get_verbatim_extracts(question, passages))
 
     def get_summary_answer(self, question: str, passages: List[Document]) -> Document:
         """
@@ -560,7 +556,7 @@ class LanguageModel(ABC):
         return Document(
             content=content,
             metadata={
-                "source": "SOURCE: " + sources,
+                "source": f"SOURCE: {sources}",
                 "cached": llm_response.cached,
             },
         )

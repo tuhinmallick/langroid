@@ -187,7 +187,7 @@ class VectorStore(ABC):
         if neighbors == 0:
             return docs_scores
         doc_chunks = [d for d in docs if d.metadata.is_chunk]
-        if len(doc_chunks) == 0:
+        if not doc_chunks:
             return docs_scores
         window_ids_list = []
         id2metadata = {}
@@ -244,7 +244,7 @@ class VectorStore(ABC):
             List[int|str]: List of windows, where each window is a sequence of ids,
                 and no two windows overlap.
         """
-        ids = set(id for w in windows for id in w)
+        ids = {id for w in windows for id in w}
         # id -> {win -> # pos}
         id2win2pos: Dict[str, Dict[int, int]] = {id: {} for id in ids}
 
@@ -259,14 +259,10 @@ class VectorStore(ABC):
             for j, x in enumerate(windows):
                 if i == j:
                     continue
-                if len(set(w).intersection(x)) == 0:
+                if not set(w).intersection(x):
                     continue
                 id = list(set(w).intersection(x))[0]  # any common id
-                if id2win2pos[id][i] > id2win2pos[id][j]:
-                    order[i, j] = -1  # win i is before win j
-                else:
-                    order[i, j] = 1  # win i is after win j
-
+                order[i, j] = -1 if id2win2pos[id][i] > id2win2pos[id][j] else 1
         # find groups of windows that overlap, like connected components in a graph
         groups = components(np.abs(order))
 

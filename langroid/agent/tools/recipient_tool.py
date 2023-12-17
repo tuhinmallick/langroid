@@ -130,22 +130,21 @@ class RecipientTool(ToolMessage):
         recipients = []
         if has_field(cls, "allowed_recipients"):
             recipients = cls.default_value("allowed_recipients")
-        if len(recipients) > 0:
-            recipients_str = ", ".join(recipients)
-            return f"""
-            Since you will be talking to multiple recipients, 
-            you must clarify who your intended recipient is, using 
-            the `{cls.default_value("request")}` tool/function-call, by setting the 
-            'intended_recipient' field to one of the following:
-            {recipients_str},
-            and setting the 'content' field to your message.
-            """
-        else:
+        if len(recipients) <= 0:
             return f"""
             Since you will be talking to multiple recipients, 
             you must clarify who your intended recipient is, using 
             the `{cls.default_value("request")}` tool/function-call, by setting the 
             'intended_recipient' field to the name of the recipient, 
+            and setting the 'content' field to your message.
+            """
+        recipients_str = ", ".join(recipients)
+        return f"""
+            Since you will be talking to multiple recipients, 
+            you must clarify who your intended recipient is, using 
+            the `{cls.default_value("request")}` tool/function-call, by setting the 
+            'intended_recipient' field to one of the following:
+            {recipients_str},
             and setting the 'content' field to your message.
             """
 
